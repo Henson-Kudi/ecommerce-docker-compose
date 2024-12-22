@@ -1,0 +1,156 @@
+version: '3'
+services:
+  zookeeper:
+    image: confluentinc/cp-zookeeper:latest
+    container_name: zookeeper
+    environment:
+      ZOOKEEPER_CLIENT_PORT: 2181
+      ZOOKEEPER_TICK_TIME: 2000
+    ports:
+      - "2181:2181"
+    networks:
+      - kafka-net
+
+  kafka:
+    image: confluentinc/cp-kafka:latest
+    container_name: kafka
+    depends_on:
+      - zookeeper
+    ports:  
+      - "9092:9092"
+    environment:
+      KAFKA_BROKER_ID: 1
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+      KAFKA_ADVERTISED_LISTENERS: PLAINTEXT://kafka:9092
+      KAFKA_OFFSETS_TOPIC_REPLICATION_FACTOR: 1
+      KAFKA_TRANSACTION_STATE_LOG_MIN_ISR: 1
+      KAFKA_TRANSACTION_STATE_LOG_REPLICATION_FACTOR: 1
+    networks:
+      - kafka-net
+
+  # nginx:
+  #   image: nginx:latest
+  #   ports:
+  #     - "80:80"
+  #   volumes:
+  #     - ./nginx.conf:/etc/nginx/nginx.conf:ro
+  #   dns:
+  #     - 8.8.8.8
+  #   networks:
+  #     - kafka-net
+
+  products-service:
+    image: henson98/products-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "5000:5000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  users-service:
+    image: henson98/users-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "4000:4000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  payments-service:
+    image: henson98/payments-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "2000:2000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  orders-service:
+    image: henson98/orders-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "3030:3030"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  cart-service:
+    image: henson98/cart-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "6000:6000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  reviews-service:
+    image: henson98/reviews-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "7000:7000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  coupons-service:
+    image: henson98/coupons-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "8000:8000"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+  cms-service:
+    image: henson98/cms-service:latest
+    depends_on:
+      - kafka
+      - zookeeper
+    deploy:
+      replicas: 1
+    ports:
+      - "5050:5050"
+    dns:
+      - 8.8.8.8
+    networks:
+      - kafka-net
+
+networks:
+  kafka-net:
+    driver: bridge
